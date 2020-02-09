@@ -16,3 +16,13 @@ FROM (
 ) tmp
 
 --Practice 27
+SELECT maker,
+       Avg(hd)
+FROM product,
+     pc
+WHERE product.model = pc.model
+    AND maker IN (
+                    SELECT DISTINCT maker
+                    FROM   product
+                    WHERE  type = 'printer')
+GROUP BY maker  
