@@ -1,4 +1,9 @@
-
+/* T-SQL Fundamentals
+ * 
+ * Itzik Ben-Gan - T-SQL Fundamentals-Microsoft Press (2016)
+ * exercise by chapter
+ * 
+ */
 --Q1b
  SELECT
 	empid
