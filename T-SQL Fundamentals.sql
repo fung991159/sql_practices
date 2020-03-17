@@ -524,5 +524,11 @@ FROM Sales.OrderValues
 GROUP BY val
 ;
 --Q7.3
-
+SELECT custid, orderid, qty
+	  , qty - LAG(qty)  OVER(PARTITION BY custid
+	  				  ORDER BY orderdate ) AS diffprev
+	  , qty - LEAD(qty)  OVER(PARTITION BY custid
+	  				  ORDER BY orderdate ) AS diffnext
+FROM dbo.Orders o 
+--Q7.4
 
