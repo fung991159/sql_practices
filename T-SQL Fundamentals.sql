@@ -529,6 +529,20 @@ SELECT custid, orderid, qty
 	  				  ORDER BY orderdate ) AS diffprev
 	  , qty - LEAD(qty)  OVER(PARTITION BY custid
 	  				  ORDER BY orderdate ) AS diffnext
-FROM dbo.Orders o 
+FROM dbo.Orders o
+;
 --Q7.4
+--Always use table expression when working with Pivot in the FORM cluase
+
+SELECT empid, [2014], [2015], [2016]
+FROM (
+	SELECT empid, orderid, YEAR(orderdate) as order_year
+	FROM dbo.Orders 
+	) AS D
+PIVOT(
+	COUNT(orderid)
+	FOR order_year IN ([2014], [2015], [2016])
+) AS P
+;
+
 
