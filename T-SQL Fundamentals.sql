@@ -533,7 +533,7 @@ FROM dbo.Orders o
 ;
 --Q7.4
 --Always use table expression when working with Pivot in the FORM cluase
-
+--Because what isn't in aggregate elmeents and spreading elements are implicitily used in group by
 SELECT empid, [2014], [2015], [2016]
 FROM (
 	SELECT empid, orderid, YEAR(orderdate) as order_year
@@ -544,5 +544,92 @@ PIVOT(
 	FOR order_year IN ([2014], [2015], [2016])
 ) AS P
 ;
+--Q7.5
+	SELECT empid, [year], qty_cnt
+	FROM dbo.EmpYearOrders
+		UNPIVOT(
+			qty_cnt FOR [year] IN (cnt2014, cnt2015, cnt2016)
+			) AS U
+;
+--Q7.6
+SELECT
+	GROUPING_ID(empid, custid, YEAR(Orderdate)) AS groupingset,
+	empid
+	, custid
+	, YEAR(Orderdate) AS orderyear
+	, SUM(qty) AS sumqty
+FROM 
+	dbo.Orders
+GROUP BY
+	GROUPING SETS (
+		(empid, custid, YEAR(orderdate)),
+		(empid, YEAR(orderdate)),
+		(custid, YEAR(orderdate))
+	)
+;
+--Q8.1
+INSERT INTO dbo.Customers
+VALUES(100, 'Coho Winery', 'USA', 'WA', 'Redmond');
 
+INSERT INTO dbo.Customers
+SELECT custid, companyname, country, region, city FROM Sales.Customers;
 
+DROP TABLE IF EXISTS dbo.Orders
+SELECT *
+INTO dbo.Orders 
+FROm Sales.Orders o 
+WHERE orderdate BETWEEN '2014-1-1' AND '2016-12-31';
+
+---8.2
+DELETE FROM dbo.Orders 
+	OUTPUT
+		deleted.orderid
+		, deleted.orderdate
+--SELECT orderdate
+--FROM dbo.Orders 
+WHERE orderdate < '2014-8-1';
+
+--8.3
+DELETE 
+	FROM dbo.Orders 
+WHERE shipcountry = 'Brazil';
+--8.4
+UPDATE dbo.Customers
+	SET region = '<none>'
+OUTPUT 
+	inserted.custid
+	, inserted.region AS new_region
+	, deleted.region AS old_region
+WHERE region IS NULL;
+--8.5
+UPDATE o SET
+	 shipcountry = c.country 
+	, shipregion = c.region
+	, shipcity = c.city
+OUTPUT 
+	inserted.shipcountry
+	, inserted.shipregion
+	, inserted. shipcity
+	FROM dbo.Orders o
+		INNER JOIN dbo.Customers c
+			ON o.custid = c.custid 
+WHERE
+	o.shipregion = N'UK';
+
+--8.6
+ALTER TABLE dbo.Orders DROP CONSTRAINT DFT_Orders_freight ;
+ALTER TABLE dbo.OrderDetails DROP CONSTRAINT 
+	DFT_OrderDetails_unitprice
+	, DFT_OrderDetails_qty
+	, DFT_OrderDetails_discount
+	, PK_OrderDetails
+	, FK_OrderDetails_Orders
+	, CHK_discount
+	, CHK_qty
+	, CHK_unitprice ;
+
+TRUNCATE
+	TABLE dbo.Orders;
+
+TRUNCATE
+	TABLE dbo.OrderDetails;
