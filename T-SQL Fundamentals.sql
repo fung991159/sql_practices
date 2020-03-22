@@ -633,3 +633,51 @@ TRUNCATE
 
 TRUNCATE
 	TABLE dbo.OrderDetails;
+--Q9.1
+CREATE TABLE dbo.Departments
+(
+	deptid int NOT NULL
+		CONSTRAINT PK_Department PRIMARY KEY NONCLUSTERED
+	,deptname VARCHAR(25) NOT NULL
+	,mgrid INT NOT NULL
+	,validfrom DATETIME2(0)
+		GENERATED ALWAYS AS ROW START HIDDEN NOT NULL
+	,validto DATETIME2(0)
+		GENERATED ALWAYS AS ROW END HIDDEN NOT NULL
+	, PERIOD FOR SYSTEM_TIME (validfrom, validto)
+	, INDEX ix_Departments CLUSTERED(deptid,mgrid)
+)
+WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = dbo.DepartmentsHistory));
+--Q9.2
+INSERT INTO dbo.Departments
+VALUES (1, 'HR', 7),
+		(2, 'IT', 5),
+		(3, 'Sales', 11),
+		(4, 'Marketing', 13);
+
+UPDATE dbo.Departments
+SET deptname = 'Sales and Marketing'
+WHERE deptname = 'Sales';
+DELETE dbo.Departments
+WHERE deptid = 4;
+
+UPDATE dbo.Departments
+SET mgrid = 13
+WHERE deptid = 3;
+
+--Q9.3
+SELECT * FROM Departments;
+SELECT * FROM Departments 
+FOR SYSTEM_TIME AS OF '2020-03-22 07:39:28';
+
+
+SELECT deptid, deptname, mgrid, validfrom, validto FROM Departments
+FOR SYSTEM_TIME FROM  '2020-03-22 07:23:23' TO  '2020-03-22 07:39:29';
+--FOR SYSTEM_TIME;
+
+IF OBJECT_ID(N'dbo.Departments', N'U') IS NOT NULL
+BEGIN
+	IF OBJECTPROPERTY(OBJECT_ID(N'dbo.Departments', N'U'), N'TableTemporalType') = 2
+	ALTER TABLE dbo.Departments SET ( SYSTEM_VERSIONING = OFF );
+	DROP TABLE IF EXISTS dbo.DepartmentsHistory, dbo.Departments;
+END;
