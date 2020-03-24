@@ -681,3 +681,36 @@ BEGIN
 	ALTER TABLE dbo.Departments SET ( SYSTEM_VERSIONING = OFF );
 	DROP TABLE IF EXISTS dbo.DepartmentsHistory, dbo.Departments;
 END;
+
+--Q10
+/* There is no exercise for Ch.10 but some brief explanation on how the transaction locks works
+ * Isolation levels
+ * 1. READ UNCOMMITTED (dirty read) - doesn't require a shared lock and read whatever in the database
+ * 2. READ COMMITTED (default by SQL server) - if other connection is in transaction then must wait for it to close in order to read the data. 
+ * 		But the read is "not repeatable" as update operation can still be done after read
+ * 3. Repeatable read - doesn't allow update operation once transaction begin, hence the fetch value stay the same in the transaction. 
+ * 		But this only lock existing rows but not non-existing/future/newly added rows (i.e. phantoms read) 
+ * 4. Seralizable - repeatable read + future proof. will block all attempts made by other transaction that add rows that qualify query filter.
+ * 
+ * Azure SQL database instead use row versioning tech.
+ * 	Advantage:
+ *		- No need to obtain share lock for read, if the rows are block, it will look for older version in tempDB, SELECT related statment hence run much faster
+ * 	Disadvantage:
+ * 		- INSERT, DELETE, UPDATE are going to be much slower because of needing to keep a copy in tempDB
+ *
+ * Isolation levels
+ * 1. SNAPSHOT: pretty much like SERIALIZABLE, but when blocked it will not wait, instead go for older version of the data
+ * 2. READ COMMITTED SNAPSHOT: like READ COMMITTED 
+ *
+ * deadlock: when transacstions are access each other resource
+ * to mitigate: 
+ * 		1. keep transactions as short as possible
+ * 		2. Avoid deadly embrace deadlock: logical operations that run in reverse order
+ *		3. choice of isloations levels: use read commited snapshot instead of read commited as it doesn't required shared locks.
+ **/
+	
+
+
+SELECT orderid, productid, unitprice, qty, discount
+FROM Sales.OrderDetails
+WHERE orderid = 10249;
