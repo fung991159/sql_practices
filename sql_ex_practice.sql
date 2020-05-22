@@ -26,3 +26,13 @@ WHERE product.model = pc.model
                     FROM   product
                     WHERE  type = 'printer')
 GROUP BY maker  
+
+--Practice 28
+SELECT 
+    COUNT(*) AS qty
+FROM (
+	SELECT maker
+	FROM product
+	GROUP BY maker
+	HAVING count(model) = 1
+	) t
