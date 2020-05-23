@@ -36,3 +36,23 @@ FROM (
 	GROUP BY maker
 	HAVING count(model) = 1
 	) t
+
+--pratice 29
+SELECT
+	CASE
+		WHEN i.point IS NULL THEN o.point
+		ELSE i.point
+	END AS point
+	, 
+	CASE
+		WHEN i.date IS NULL THEN o.date
+		ELSE i.date
+	END AS date
+	, inc
+	, OUT
+FROM
+	dbo.Income_o i
+FULL OUTER JOIN dbo.outcome_o o
+ON i.point = o.point
+AND i.date = o.date
+ORDER BY date
